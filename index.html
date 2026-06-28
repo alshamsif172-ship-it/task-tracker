@@ -7,252 +7,105 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --navy: #0E2A47;
-    --navy-light: #1a3d61;
-    --gold: #C9A227;
-    --gold-light: #e0b830;
-    --green: #1F7A4D;
-    --green-light: #28a263;
-    --bg: #f0f4f8;
-    --card: #ffffff;
-    --text: #1a2535;
-    --muted: #6b7a99;
-    --border: #dde3ed;
-    --danger: #e53e3e;
-    --warning: #dd6b20;
-    --radius: 12px;
-    --shadow: 0 2px 16px rgba(14,42,71,0.10);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
-  /* ===== AUTH ===== */
-  #authScreen {
-    min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 60%, #1a4d6e 100%);
-  }
-  .auth-box {
-    background: white; border-radius: 20px; padding: 40px 36px;
-    width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-  }
-  .auth-logo { text-align: center; margin-bottom: 28px; }
-  .auth-logo .logo-icon {
-    width: 70px; height: 70px; background: var(--gold);
-    border-radius: 18px; display: inline-flex; align-items: center; justify-content: center;
-    font-size: 30px; margin-bottom: 12px;
-  }
-  .auth-logo h2 { color: var(--navy); font-size: 20px; font-weight: 800; }
-  .auth-logo p { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  .auth-tabs { display: flex; gap: 0; margin-bottom: 24px; border: 2px solid var(--border); border-radius: 10px; overflow: hidden; }
-  .auth-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700; border: none; background: white; color: var(--muted); transition: all 0.2s; }
-  .auth-tab.active { background: var(--navy); color: white; }
-  .form-group { margin-bottom: 16px; }
-  .form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
-  .form-group input, .form-group select {
-    width: 100%; padding: 11px 14px; border: 2px solid var(--border);
-    border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 14px;
-    color: var(--text); outline: none; transition: border-color 0.2s;
-    text-align: right;
-  }
-  .form-group input:focus, .form-group select:focus { border-color: var(--gold); }
-  .btn-primary {
-    width: 100%; padding: 13px; background: var(--navy); color: white;
-    border: none; border-radius: 10px; font-family: 'Cairo', sans-serif;
-    font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s;
-  }
-  .btn-primary:hover { background: var(--navy-light); }
-  .auth-msg { text-align: center; font-size: 13px; margin-top: 12px; padding: 10px; border-radius: 8px; display: none; }
-  .auth-msg.error { background: #fff5f5; color: var(--danger); display: block; }
-  .auth-msg.success { background: #f0fff4; color: var(--green); display: block; }
-
-  /* ===== LAYOUT ===== */
-  #appScreen { display: none; }
-  .topbar {
-    background: var(--navy); color: white; padding: 0 24px;
-    height: 62px; display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-  }
-  .topbar-brand { display: flex; align-items: center; gap: 10px; }
-  .topbar-brand .brand-icon { width: 36px; height: 36px; background: var(--gold); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-  .topbar-brand h1 { font-size: 16px; font-weight: 800; }
-  .topbar-right { display: flex; align-items: center; gap: 14px; }
-  .user-chip { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 700; }
-  .user-avatar { width: 28px; height: 28px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: var(--navy); }
-  .btn-logout { background: rgba(255,255,255,0.15); border: none; color: white; border-radius: 8px; padding: 6px 14px; font-family: 'Cairo', sans-serif; font-size: 13px; cursor: pointer; font-weight: 700; transition: background 0.2s; }
-  .btn-logout:hover { background: rgba(255,255,255,0.25); }
-
-  .nav-tabs {
-    background: white; border-bottom: 2px solid var(--border);
-    display: flex; gap: 0; padding: 0 24px; overflow-x: auto;
-  }
-  .nav-tab {
-    padding: 14px 20px; border: none; background: none; font-family: 'Cairo', sans-serif;
-    font-size: 14px; font-weight: 700; color: var(--muted); cursor: pointer;
-    border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap;
-    transition: all 0.2s; display: flex; align-items: center; gap: 6px;
-  }
-  .nav-tab.active { color: var(--navy); border-bottom-color: var(--gold); }
-  .nav-tab:hover { color: var(--navy); }
-
-  .main { padding: 28px 24px; max-width: 1200px; margin: 0 auto; }
-
-  /* ===== DASHBOARD ===== */
-  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
-  .stat-card {
-    background: white; border-radius: var(--radius); padding: 22px 20px;
-    box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px;
-    border-top: 4px solid transparent;
-  }
-  .stat-card.c1 { border-top-color: var(--navy); }
-  .stat-card.c2 { border-top-color: var(--gold); }
-  .stat-card.c3 { border-top-color: var(--green); }
-  .stat-card.c4 { border-top-color: var(--danger); }
-  .stat-label { font-size: 12px; color: var(--muted); font-weight: 700; }
-  .stat-value { font-size: 34px; font-weight: 800; color: var(--navy); }
-  .stat-icon { font-size: 22px; margin-bottom: 4px; }
-
-  /* ===== TASKS ===== */
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
-  .section-title { font-size: 18px; font-weight: 800; color: var(--navy); }
-  .btn-add {
-    background: var(--gold); color: var(--navy); border: none; border-radius: 10px;
-    padding: 10px 20px; font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 800;
-    cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s;
-  }
-  .btn-add:hover { background: var(--gold-light); }
-
-  .filters { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
-  .filter-btn {
-    padding: 7px 16px; border: 2px solid var(--border); border-radius: 20px;
-    background: white; font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
-    cursor: pointer; color: var(--muted); transition: all 0.2s;
-  }
-  .filter-btn.active { border-color: var(--navy); background: var(--navy); color: white; }
-
-  .tasks-list { display: flex; flex-direction: column; gap: 12px; }
-  .task-card {
-    background: white; border-radius: var(--radius); padding: 18px 20px;
-    box-shadow: var(--shadow); border-right: 5px solid var(--border);
-    transition: box-shadow 0.2s, transform 0.1s;
-  }
-  .task-card:hover { box-shadow: 0 4px 24px rgba(14,42,71,0.13); transform: translateY(-1px); }
-  .task-card.priority-high { border-right-color: var(--danger); }
-  .task-card.priority-medium { border-right-color: var(--gold); }
-  .task-card.priority-low { border-right-color: var(--green); }
-  .task-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-  .task-title { font-size: 15px; font-weight: 800; color: var(--navy); flex: 1; }
-  .task-title.done { text-decoration: line-through; opacity: 0.5; }
-  .task-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-  .badge {
-    padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
-  }
-  .badge-status-pending { background: #fff3cd; color: #856404; }
-  .badge-status-inprogress { background: #cce5ff; color: #004085; }
-  .badge-status-done { background: #d4edda; color: #155724; }
-  .badge-priority-high { background: #f8d7da; color: #721c24; }
-  .badge-priority-medium { background: #fff3cd; color: #856404; }
-  .badge-priority-low { background: #d4edda; color: #155724; }
-  .task-meta { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .task-meta-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); font-weight: 600; }
-  .task-progress { margin-top: 12px; }
-  .progress-bar-bg { background: var(--bg); border-radius: 10px; height: 7px; overflow: hidden; }
-  .progress-bar-fill { background: linear-gradient(90deg, var(--green), var(--gold)); height: 100%; border-radius: 10px; transition: width 0.5s; }
-  .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-  .task-actions { display: flex; gap: 6px; margin-top: 12px; }
-  .btn-sm {
-    padding: 5px 12px; border: none; border-radius: 7px; font-family: 'Cairo', sans-serif;
-    font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-  }
-  .btn-sm.edit { background: #e8f0fe; color: #1a3d61; }
-  .btn-sm.edit:hover { background: #c8d8fc; }
-  .btn-sm.delete { background: #fdecea; color: var(--danger); }
-  .btn-sm.delete:hover { background: #fbd0cc; }
-  .btn-sm.attach { background: #f0fff4; color: var(--green); }
-  .btn-sm.attach:hover { background: #c6f6d5; }
-  .attachments-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
-  .attach-chip {
-    background: #f0f4f8; border-radius: 8px; padding: 4px 10px;
-    font-size: 11px; color: var(--navy); font-weight: 700; display: flex; align-items: center; gap: 5px;
-    cursor: pointer; transition: background 0.2s;
-  }
-  .attach-chip:hover { background: #dde3ed; }
-
-  /* ===== MODAL ===== */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200;
-    display: flex; align-items: center; justify-content: center; padding: 20px;
-    display: none;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: white; border-radius: 18px; width: 100%; max-width: 520px;
-    padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;
-  }
-  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
-  .modal-title { font-size: 18px; font-weight: 800; color: var(--navy); }
-  .btn-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--muted); padding: 0; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .form-group textarea {
-    width: 100%; padding: 11px 14px; border: 2px solid var(--border);
-    border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 14px;
-    color: var(--text); outline: none; resize: vertical; min-height: 80px;
-    text-align: right;
-  }
-  .form-group textarea:focus { border-color: var(--gold); }
-  .progress-input { display: flex; align-items: center; gap: 10px; }
-  .progress-input input[type=range] { flex: 1; }
-  .progress-input span { font-weight: 800; color: var(--navy); min-width: 36px; }
-  .file-upload-area {
-    border: 2px dashed var(--border); border-radius: 10px; padding: 20px;
-    text-align: center; cursor: pointer; transition: border-color 0.2s; color: var(--muted);
-    font-size: 13px; font-weight: 700;
-  }
-  .file-upload-area:hover { border-color: var(--gold); color: var(--navy); }
-  .file-upload-area input { display: none; }
-  .modal-footer { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
-  .btn-cancel { padding: 10px 20px; border: 2px solid var(--border); border-radius: 10px; background: white; font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; color: var(--muted); }
-  .btn-save { padding: 10px 24px; background: var(--navy); color: white; border: none; border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }
-  .btn-save:hover { background: var(--navy-light); }
-
-  /* ===== REPORTS ===== */
-  .reports-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-  .report-card { background: white; border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
-  .report-card h3 { font-size: 15px; font-weight: 800; color: var(--navy); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-  .report-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .report-row:last-child { border-bottom: none; }
-  .report-row-label { font-size: 13px; color: var(--text); font-weight: 600; }
-  .report-row-val { font-size: 14px; font-weight: 800; color: var(--navy); }
-
-  /* ===== MANAGER VIEW ===== */
-  .emp-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-  .emp-card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
-  .emp-name { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
-  .emp-dept { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 14px; }
-  .emp-stats { display: flex; gap: 12px; }
-  .emp-stat { flex: 1; text-align: center; background: var(--bg); border-radius: 8px; padding: 8px; }
-  .emp-stat-val { font-size: 20px; font-weight: 800; color: var(--navy); }
-  .emp-stat-lbl { font-size: 10px; color: var(--muted); font-weight: 700; }
-
-  /* ===== EMPTY ===== */
-  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
-  .empty-state .empty-icon { font-size: 48px; margin-bottom: 14px; }
-  .empty-state h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 6px; }
-  .empty-state p { font-size: 13px; }
-
-  .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 15px; font-weight: 700; }
-
-  @media (max-width: 600px) {
-    .main { padding: 16px 12px; }
-    .form-row { grid-template-columns: 1fr; }
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  }
+:root{--navy:#0E2A47;--navy-light:#1a3d61;--gold:#C9A227;--green:#1F7A4D;--bg:#f0f4f8;--card:#fff;--text:#1a2535;--muted:#6b7a99;--border:#dde3ed;--danger:#e53e3e;--radius:12px;--shadow:0 2px 16px rgba(14,42,71,.10)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+#authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy),#1a4d6e)}
+.auth-box{background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.auth-logo{text-align:center;margin-bottom:28px}
+.logo-icon{width:70px;height:70px;background:var(--gold);border-radius:18px;display:inline-flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:12px}
+.auth-logo h2{color:var(--navy);font-size:20px;font-weight:800}
+.auth-logo p{color:var(--muted);font-size:13px;margin-top:4px}
+.auth-tabs{display:flex;margin-bottom:24px;border:2px solid var(--border);border-radius:10px;overflow:hidden}
+.auth-tab{flex:1;padding:10px;text-align:center;cursor:pointer;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;border:none;background:#fff;color:var(--muted);transition:all .2s}
+.auth-tab.active{background:var(--navy);color:#fff}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-family:'Cairo',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;text-align:right}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--gold)}
+.form-group textarea{resize:vertical;min-height:80px}
+.btn-primary{width:100%;padding:13px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+.btn-primary:hover{background:var(--navy-light)}
+.auth-msg{text-align:center;font-size:13px;margin-top:12px;padding:10px;border-radius:8px;display:none}
+.auth-msg.error{background:#fff5f5;color:var(--danger);display:block}
+.auth-msg.success{background:#f0fff4;color:var(--green);display:block}
+#appScreen{display:none}
+.topbar{background:var(--navy);color:#fff;padding:0 24px;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:36px;height:36px;background:var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.topbar-brand h1{font-size:16px;font-weight:800}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.user-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700}
+.user-avatar{width:28px;height:28px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--navy)}
+.btn-logout{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;padding:6px 14px;font-family:'Cairo',sans-serif;font-size:13px;cursor:pointer;font-weight:700}
+.nav-tabs{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0 24px;overflow-x:auto}
+.nav-tab{padding:14px 20px;border:none;background:none;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s}
+.nav-tab.active{color:var(--navy);border-bottom-color:var(--gold)}
+.main{padding:28px 24px;max-width:1200px;margin:0 auto}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:#fff;border-radius:var(--radius);padding:22px 20px;box-shadow:var(--shadow);border-top:4px solid transparent}
+.stat-card.c1{border-top-color:var(--navy)}.stat-card.c2{border-top-color:var(--gold)}.stat-card.c3{border-top-color:var(--green)}.stat-card.c4{border-top-color:var(--danger)}
+.stat-label{font-size:12px;color:var(--muted);font-weight:700}.stat-value{font-size:34px;font-weight:800;color:var(--navy)}.stat-icon{font-size:22px;margin-bottom:4px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.section-title{font-size:18px;font-weight:800;color:var(--navy)}
+.btn-add{background:var(--gold);color:var(--navy);border:none;border-radius:10px;padding:10px 20px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:800;cursor:pointer}
+.filters{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.filter-btn{padding:7px 16px;border:2px solid var(--border);border-radius:20px;background:#fff;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)}
+.filter-btn.active{border-color:var(--navy);background:var(--navy);color:#fff}
+.tasks-list{display:flex;flex-direction:column;gap:12px}
+.task-card{background:#fff;border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border-right:5px solid var(--border)}
+.task-card.priority-high{border-right-color:var(--danger)}.task-card.priority-medium{border-right-color:var(--gold)}.task-card.priority-low{border-right-color:var(--green)}
+.task-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.task-title{font-size:15px;font-weight:800;color:var(--navy);flex:1}
+.task-title.done{text-decoration:line-through;opacity:.5}
+.task-badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-status-pending{background:#fff3cd;color:#856404}.badge-status-inprogress{background:#cce5ff;color:#004085}.badge-status-done{background:#d4edda;color:#155724}
+.badge-priority-high{background:#f8d7da;color:#721c24}.badge-priority-medium{background:#fff3cd;color:#856404}.badge-priority-low{background:#d4edda;color:#155724}
+.task-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.task-meta-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);font-weight:600}
+.task-progress{margin-top:12px}
+.progress-bar-bg{background:var(--bg);border-radius:10px;height:7px;overflow:hidden}
+.progress-bar-fill{background:linear-gradient(90deg,var(--green),var(--gold));height:100%;border-radius:10px;transition:width .5s}
+.progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px}
+.task-actions{display:flex;gap:6px;margin-top:12px}
+.btn-sm{padding:5px 12px;border:none;border-radius:7px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+.btn-sm.edit{background:#e8f0fe;color:#1a3d61}.btn-sm.delete{background:#fdecea;color:var(--danger)}.btn-sm.attach{background:#f0fff4;color:var(--green)}
+.attachments-list{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.attach-chip{background:#f0f4f8;border-radius:8px;padding:4px 10px;font-size:11px;color:var(--navy);font-weight:700;display:flex;align-items:center;gap:5px;cursor:pointer}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:520px;padding:30px;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.modal-title{font-size:18px;font-weight:800;color:var(--navy)}
+.btn-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.file-upload-area{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;color:var(--muted);font-size:13px;font-weight:700}
+.file-upload-area input{display:none}
+.modal-footer{display:flex;gap:10px;margin-top:24px;justify-content:flex-end}
+.btn-cancel{padding:10px 20px;border:2px solid var(--border);border-radius:10px;background:#fff;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;cursor:pointer;color:var(--muted)}
+.btn-save{padding:10px 24px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.reports-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.report-card{background:#fff;border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.report-card h3{font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px}
+.report-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.report-row:last-child{border-bottom:none}
+.report-row-label{font-size:13px;color:var(--text);font-weight:600}.report-row-val{font-size:14px;font-weight:800;color:var(--navy)}
+.emp-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.emp-card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.emp-name{font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px}
+.emp-dept{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:14px}
+.emp-stats{display:flex;gap:12px}
+.emp-stat{flex:1;text-align:center;background:var(--bg);border-radius:8px;padding:8px}
+.emp-stat-val{font-size:20px;font-weight:800;color:var(--navy)}.emp-stat-lbl{font-size:10px;color:var(--muted);font-weight:700}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .empty-icon{font-size:48px;margin-bottom:14px}
+.empty-state h3{font-size:16px;font-weight:800;color:var(--navy);margin-bottom:6px}
+@media(max-width:600px){.main{padding:16px 12px}.form-row{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 
-<!-- AUTH -->
 <div id="authScreen">
   <div class="auth-box">
     <div class="auth-logo">
@@ -264,28 +117,14 @@
       <button class="auth-tab active" onclick="switchAuth('login')">تسجيل الدخول</button>
       <button class="auth-tab" onclick="switchAuth('register')">حساب جديد</button>
     </div>
-    <!-- Login -->
     <div id="loginForm">
-      <div class="form-group">
-        <label>البريد الإلكتروني</label>
-        <input type="email" id="loginEmail" placeholder="example@almaqam.ae">
-      </div>
-      <div class="form-group">
-        <label>كلمة المرور</label>
-        <input type="password" id="loginPassword" placeholder="••••••••">
-      </div>
+      <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="loginEmail" placeholder="example@almaqam.ae"></div>
+      <div class="form-group"><label>كلمة المرور</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
       <button class="btn-primary" onclick="login()">دخول</button>
     </div>
-    <!-- Register -->
     <div id="registerForm" style="display:none">
-      <div class="form-group">
-        <label>الاسم الكامل</label>
-        <input type="text" id="regName" placeholder="الاسم الثلاثي">
-      </div>
-      <div class="form-group">
-        <label>البريد الإلكتروني</label>
-        <input type="email" id="regEmail" placeholder="example@almaqam.ae">
-      </div>
+      <div class="form-group"><label>الاسم الكامل</label><input type="text" id="regName" placeholder="الاسم الثلاثي"></div>
+      <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="regEmail" placeholder="example@almaqam.ae"></div>
       <div class="form-group">
         <label>القسم</label>
         <select id="regDept">
@@ -299,60 +138,40 @@
           <option>تقنية المعلومات</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>كلمة المرور</label>
-        <input type="password" id="regPassword" placeholder="8 أحرف على الأقل">
-      </div>
+      <div class="form-group"><label>كلمة المرور</label><input type="password" id="regPassword" placeholder="8 أحرف على الأقل"></div>
       <button class="btn-primary" onclick="register()">إنشاء الحساب</button>
     </div>
     <div class="auth-msg" id="authMsg"></div>
   </div>
 </div>
 
-<!-- APP -->
 <div id="appScreen">
   <div class="topbar">
-    <div class="topbar-brand">
-      <div class="brand-icon">📋</div>
-      <h1>متابعة الأعمال</h1>
-    </div>
+    <div class="topbar-brand"><div class="brand-icon">📋</div><h1>متابعة الأعمال</h1></div>
     <div class="topbar-right">
-      <div class="user-chip">
-        <div class="user-avatar" id="userInitial">م</div>
-        <span id="userName">الموظف</span>
-      </div>
+      <div class="user-chip"><div class="user-avatar" id="userInitial">م</div><span id="userName">الموظف</span></div>
       <button class="btn-logout" onclick="logout()">خروج</button>
     </div>
   </div>
-
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showTab('dashboard')">📊 الداشبورد</button>
     <button class="nav-tab" onclick="showTab('tasks')">✅ مهامي</button>
     <button class="nav-tab" onclick="showTab('reports')">📈 التقارير</button>
     <button class="nav-tab" id="managerTab" onclick="showTab('manager')" style="display:none">👥 كل الموظفين</button>
   </div>
-
   <div class="main">
-    <!-- DASHBOARD -->
     <div id="tab-dashboard">
-      <div class="stats-grid" id="statsGrid">
+      <div class="stats-grid">
         <div class="stat-card c1"><div class="stat-icon">📋</div><div class="stat-label">إجمالي المهام</div><div class="stat-value" id="s-total">0</div></div>
         <div class="stat-card c2"><div class="stat-icon">⏳</div><div class="stat-label">قيد التنفيذ</div><div class="stat-value" id="s-inprogress">0</div></div>
         <div class="stat-card c3"><div class="stat-icon">✅</div><div class="stat-label">مكتملة</div><div class="stat-value" id="s-done">0</div></div>
         <div class="stat-card c4"><div class="stat-icon">🔴</div><div class="stat-label">متأخرة</div><div class="stat-value" id="s-late">0</div></div>
       </div>
-      <div class="section-header">
-        <div class="section-title">🕐 آخر المهام</div>
-      </div>
+      <div class="section-header"><div class="section-title">🕐 آخر المهام</div></div>
       <div id="recentTasksList" class="tasks-list"></div>
     </div>
-
-    <!-- TASKS -->
     <div id="tab-tasks" style="display:none">
-      <div class="section-header">
-        <div class="section-title">✅ مهامي اليومية</div>
-        <button class="btn-add" onclick="openAddModal()">＋ إضافة مهمة</button>
-      </div>
+      <div class="section-header"><div class="section-title">✅ مهامي اليومية</div><button class="btn-add" onclick="openAddModal()">＋ إضافة مهمة</button></div>
       <div class="filters">
         <button class="filter-btn active" onclick="filterTasks('all',this)">الكل</button>
         <button class="filter-btn" onclick="filterTasks('pending',this)">معلقة</button>
@@ -362,14 +181,10 @@
       </div>
       <div id="tasksList" class="tasks-list"></div>
     </div>
-
-    <!-- REPORTS -->
     <div id="tab-reports" style="display:none">
-      <div class="section-header"><div class="section-title">📈 التقارير والإحصائيات</div></div>
+      <div class="section-header"><div class="section-title">📈 التقارير</div></div>
       <div class="reports-grid" id="reportsGrid"></div>
     </div>
-
-    <!-- MANAGER -->
     <div id="tab-manager" style="display:none">
       <div class="section-header"><div class="section-title">👥 أعمال جميع الموظفين</div></div>
       <div class="emp-cards" id="empCards"></div>
@@ -377,439 +192,286 @@
   </div>
 </div>
 
-<!-- TASK MODAL -->
 <div class="modal-overlay" id="taskModal">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="modalTitle">إضافة مهمة جديدة</div>
-      <button class="btn-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="form-group">
-      <label>عنوان المهمة *</label>
-      <input type="text" id="fTitle" placeholder="وصف المهمة بإيجاز">
-    </div>
-    <div class="form-group">
-      <label>التفاصيل</label>
-      <textarea id="fDesc" placeholder="تفاصيل إضافية (اختياري)"></textarea>
-    </div>
+    <div class="modal-header"><div class="modal-title" id="modalTitle">إضافة مهمة</div><button class="btn-close" onclick="closeModal()">✕</button></div>
+    <div class="form-group"><label>عنوان المهمة *</label><input type="text" id="fTitle" placeholder="عنوان المهمة"></div>
+    <div class="form-group"><label>التفاصيل</label><textarea id="fDesc" placeholder="تفاصيل إضافية"></textarea></div>
     <div class="form-row">
-      <div class="form-group">
-        <label>تاريخ الاستحقاق</label>
-        <input type="date" id="fDueDate">
-      </div>
-      <div class="form-group">
-        <label>الأولوية</label>
-        <select id="fPriority">
-          <option value="low">منخفضة 🟢</option>
-          <option value="medium" selected>متوسطة 🟡</option>
-          <option value="high">عالية 🔴</option>
-        </select>
-      </div>
+      <div class="form-group"><label>تاريخ الاستحقاق</label><input type="date" id="fDueDate"></div>
+      <div class="form-group"><label>الأولوية</label><select id="fPriority"><option value="low">منخفضة</option><option value="medium" selected>متوسطة</option><option value="high">عالية</option></select></div>
     </div>
-    <div class="form-group">
-      <label>الحالة</label>
-      <select id="fStatus">
-        <option value="pending">معلقة</option>
-        <option value="inprogress">قيد التنفيذ</option>
-        <option value="done">مكتملة</option>
-      </select>
-    </div>
+    <div class="form-group"><label>الحالة</label><select id="fStatus"><option value="pending">معلقة</option><option value="inprogress">قيد التنفيذ</option><option value="done">مكتملة</option></select></div>
     <div class="form-group">
       <label>نسبة الإنجاز: <span id="progressVal">0</span>%</label>
-      <div class="progress-input">
-        <input type="range" id="fProgress" min="0" max="100" value="0" oninput="document.getElementById('progressVal').textContent=this.value">
-      </div>
+      <input type="range" id="fProgress" min="0" max="100" value="0" style="width:100%" oninput="document.getElementById('progressVal').textContent=this.value">
     </div>
     <div class="form-group">
       <label>إرفاق ملفات</label>
       <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
         <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)">
-        📎 انقر لإرفاق ملفات (PDF، صور، مستندات)
+        📎 انقر لإرفاق ملفات
       </div>
-      <div id="selectedFiles" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;"></div>
+      <div id="selectedFiles" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal()">إلغاء</button>
-      <button class="btn-save" onclick="saveTask()">💾 حفظ المهمة</button>
+      <button class="btn-save" onclick="saveTask()">💾 حفظ</button>
     </div>
   </div>
 </div>
 
 <script>
-// ===== SUPABASE CONFIG =====
-const SUPABASE_URL = 'https://pynktpmqahpiinbmhumd.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5bmt0cG1xYWhwaWluYm1odW1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTU2MDcsImV4cCI6MjA5NjIzMTYwN30.zktyfIHwRlCVOVpw7iiqCySvTRWBLXMOTz_V5MlDHRU';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+var SUPABASE_URL = 'https://pynktpmqahpiinbmhumd.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5bmt0cG1xYWhwaWluYm1odW1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTU2MDcsImV4cCI6MjA5NjIzMTYwN30.zktyfIHwRlCVOVpw7iiqCySvTRWBLXMOTz_V5MlDHRU';
+var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+var currentUser = null;
+var userProfile = null;
+var allTasks = [];
+var editingTaskId = null;
+var pendingFiles = [];
+var currentFilter = 'all';
+var MANAGERS = ['fatima.alshamsi@aam.gov.ae'];
 
-// ===== STATE =====
-let currentUser = null;
-let userProfile = null;
-let allTasks = [];
-let editingTaskId = null;
-let pendingFiles = [];
-let currentFilter = 'all';
-
-// Manager emails (can add more)
-const MANAGERS = ['fatima@almaqam.ae', 'dr.ali@almaqam.ae'];
-
-// ===== AUTH =====
 function switchAuth(mode) {
-  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (mode==='login'&&i===0)||(mode==='register'&&i===1)));
-  document.getElementById('loginForm').style.display = mode === 'login' ? '' : 'none';
-  document.getElementById('registerForm').style.display = mode === 'register' ? '' : 'none';
-  document.getElementById('authMsg').className = 'auth-msg';
+  document.querySelectorAll('.auth-tab').forEach(function(t,i){ t.classList.toggle('active',(mode==='login'&&i===0)||(mode==='register'&&i===1)); });
+  document.getElementById('loginForm').style.display = mode==='login'?'':'none';
+  document.getElementById('registerForm').style.display = mode==='register'?'':'none';
+  document.getElementById('authMsg').className='auth-msg';
 }
 
-function showAuthMsg(msg, type) {
-  const el = document.getElementById('authMsg');
-  el.textContent = msg;
-  el.className = 'auth-msg ' + type;
-}
+function showAuthMsg(msg,type){ var el=document.getElementById('authMsg'); el.textContent=msg; el.className='auth-msg '+type; }
 
 async function login() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPassword').value;
-  if (!email || !pass) return showAuthMsg('يرجى تعبئة جميع الحقول', 'error');
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) return showAuthMsg('بيانات الدخول غير صحيحة', 'error');
-  await initUser(data.user);
+  var email=document.getElementById('loginEmail').value.trim();
+  var pass=document.getElementById('loginPassword').value;
+  if(!email||!pass) return showAuthMsg('يرجى تعبئة جميع الحقول','error');
+  var res=await sb.auth.signInWithPassword({email:email,password:pass});
+  if(res.error) return showAuthMsg('بيانات الدخول غير صحيحة','error');
+  await initUser(res.data.user);
 }
 
 async function register() {
-  const name = document.getElementById('regName').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const dept = document.getElementById('regDept').value;
-  const pass = document.getElementById('regPassword').value;
-  if (!name || !email || !dept || !pass) return showAuthMsg('يرجى تعبئة جميع الحقول', 'error');
-  if (pass.length < 8) return showAuthMsg('كلمة المرور يجب أن تكون 8 أحرف على الأقل', 'error');
-
-  const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { name, dept } } });
-  if (error) return showAuthMsg('حدث خطأ: ' + error.message, 'error');
-
-  // Save profile
-  if (data.user) {
-    await sb.from('employee_profiles').upsert({ id: data.user.id, name, email, dept, created_at: new Date().toISOString() });
+  var name=document.getElementById('regName').value.trim();
+  var email=document.getElementById('regEmail').value.trim();
+  var dept=document.getElementById('regDept').value;
+  var pass=document.getElementById('regPassword').value;
+  if(!name||!email||!dept||!pass) return showAuthMsg('يرجى تعبئة جميع الحقول','error');
+  if(pass.length<8) return showAuthMsg('كلمة المرور 8 أحرف على الأقل','error');
+  var res=await sb.auth.signUp({email:email,password:pass,options:{data:{name:name,dept:dept}}});
+  if(res.error) return showAuthMsg('خطأ: '+res.error.message,'error');
+  if(res.data.user){
+    await sb.from('employee_profiles').upsert({id:res.data.user.id,name:name,email:email,dept:dept,created_at:new Date().toISOString()});
   }
-  showAuthMsg('تم إنشاء الحساب! يمكنك تسجيل الدخول الآن', 'success');
-  setTimeout(() => switchAuth('login'), 1500);
+  showAuthMsg('تم إنشاء الحساب! سجّلي دخولك الآن','success');
+  setTimeout(function(){ switchAuth('login'); },1500);
 }
 
 async function logout() {
   await sb.auth.signOut();
-  currentUser = null; userProfile = null; allTasks = [];
-  document.getElementById('authScreen').style.display = 'flex';
-  document.getElementById('appScreen').style.display = 'none';
+  currentUser=null; allTasks=[];
+  document.getElementById('authScreen').style.display='flex';
+  document.getElementById('appScreen').style.display='none';
 }
 
 async function initUser(user) {
-  currentUser = user;
-  // Load profile
-  const { data: profile } = await sb.from('employee_profiles').select('*').eq('id', user.id).single();
-  userProfile = profile || { name: user.user_metadata?.name || user.email, dept: user.user_metadata?.dept || '' };
-
-  const displayName = userProfile.name || user.email;
-  document.getElementById('userName').textContent = displayName;
-  document.getElementById('userInitial').textContent = displayName.charAt(0);
-
-  const isManager = MANAGERS.includes(user.email);
-  document.getElementById('managerTab').style.display = isManager ? '' : 'none';
-
-  document.getElementById('authScreen').style.display = 'none';
-  document.getElementById('appScreen').style.display = '';
+  currentUser=user;
+  var res=await sb.from('employee_profiles').select('*').eq('id',user.id).single();
+  userProfile=res.data||{name:user.user_metadata&&user.user_metadata.name?user.user_metadata.name:user.email,dept:''};
+  var displayName=userProfile.name||user.email;
+  document.getElementById('userName').textContent=displayName;
+  document.getElementById('userInitial').textContent=displayName.charAt(0);
+  document.getElementById('managerTab').style.display=MANAGERS.indexOf(user.email)>=0?'':'none';
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('appScreen').style.display='';
   await loadTasks();
   showTab('dashboard');
 }
 
-// ===== TASKS =====
 async function loadTasks() {
-  const { data, error } = await sb.from('employee_tasks').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
-  allTasks = data || [];
-  renderDashboard();
-  renderTasks();
-  renderReports();
+  var res=await sb.from('employee_tasks').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+  allTasks=res.data||[];
+  renderDashboard(); renderTasks(); renderReports();
 }
 
 function renderDashboard() {
-  const total = allTasks.length;
-  const inprog = allTasks.filter(t => t.status === 'inprogress').length;
-  const done = allTasks.filter(t => t.status === 'done').length;
-  const now = new Date(); now.setHours(0,0,0,0);
-  const late = allTasks.filter(t => t.due_date && new Date(t.due_date) < now && t.status !== 'done').length;
-
-  document.getElementById('s-total').textContent = total;
-  document.getElementById('s-inprogress').textContent = inprog;
-  document.getElementById('s-done').textContent = done;
-  document.getElementById('s-late').textContent = late;
-
-  const recent = allTasks.slice(0, 3);
-  document.getElementById('recentTasksList').innerHTML = recent.length
-    ? recent.map(t => taskCardHTML(t)).join('')
-    : emptyState('لا توجد مهام بعد', 'ابدأ بإضافة أول مهمة لك');
+  var total=allTasks.length;
+  var inprog=allTasks.filter(function(t){return t.status==='inprogress';}).length;
+  var done=allTasks.filter(function(t){return t.status==='done';}).length;
+  var now=new Date(); now.setHours(0,0,0,0);
+  var late=allTasks.filter(function(t){return t.due_date&&new Date(t.due_date)<now&&t.status!=='done';}).length;
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-inprogress').textContent=inprog;
+  document.getElementById('s-done').textContent=done;
+  document.getElementById('s-late').textContent=late;
+  var recent=allTasks.slice(0,3);
+  document.getElementById('recentTasksList').innerHTML=recent.length?recent.map(taskCardHTML).join(''):emptyState('لا توجد مهام','ابدأ بإضافة مهمتك الأولى');
 }
 
-function renderTasks(filter = currentFilter) {
-  let tasks = [...allTasks];
-  if (filter === 'pending') tasks = tasks.filter(t => t.status === 'pending');
-  else if (filter === 'inprogress') tasks = tasks.filter(t => t.status === 'inprogress');
-  else if (filter === 'done') tasks = tasks.filter(t => t.status === 'done');
-  else if (filter === 'high') tasks = tasks.filter(t => t.priority === 'high');
-  document.getElementById('tasksList').innerHTML = tasks.length
-    ? tasks.map(t => taskCardHTML(t)).join('')
-    : emptyState('لا توجد مهام', 'جرب تغيير الفلتر أو أضف مهمة جديدة');
+function renderTasks(filter) {
+  if(!filter) filter=currentFilter;
+  var tasks=allTasks.slice();
+  if(filter==='pending') tasks=tasks.filter(function(t){return t.status==='pending';});
+  else if(filter==='inprogress') tasks=tasks.filter(function(t){return t.status==='inprogress';});
+  else if(filter==='done') tasks=tasks.filter(function(t){return t.status==='done';});
+  else if(filter==='high') tasks=tasks.filter(function(t){return t.priority==='high';});
+  document.getElementById('tasksList').innerHTML=tasks.length?tasks.map(taskCardHTML).join(''):emptyState('لا توجد مهام','أضف مهمة جديدة');
 }
 
 function taskCardHTML(t) {
-  const statusMap = { pending: 'badge-status-pending', inprogress: 'badge-status-inprogress', done: 'badge-status-done' };
-  const statusLabel = { pending: 'معلقة', inprogress: 'قيد التنفيذ', done: 'مكتملة' };
-  const priorityMap = { high: 'badge-priority-high', medium: 'badge-priority-medium', low: 'badge-priority-low' };
-  const priorityLabel = { high: 'أولوية عالية 🔴', medium: 'أولوية متوسطة 🟡', low: 'أولوية منخفضة 🟢' };
-  const dueStr = t.due_date ? new Date(t.due_date).toLocaleDateString('ar-AE', { day: 'numeric', month: 'long' }) : '';
-  const now = new Date(); now.setHours(0,0,0,0);
-  const isLate = t.due_date && new Date(t.due_date) < now && t.status !== 'done';
-  const attachments = t.attachments ? JSON.parse(t.attachments) : [];
-
-  return `<div class="task-card priority-${t.priority}">
-    <div class="task-top">
-      <div class="task-title ${t.status==='done'?'done':''}">${t.title}</div>
-      <div class="task-badges">
-        <span class="badge ${statusMap[t.status]}">${statusLabel[t.status]}</span>
-        <span class="badge ${priorityMap[t.priority]}">${priorityLabel[t.priority]}</span>
-        ${isLate ? '<span class="badge" style="background:#f8d7da;color:#721c24">⚠️ متأخرة</span>' : ''}
-      </div>
-    </div>
-    ${t.description ? `<div style="font-size:13px;color:var(--muted);margin-bottom:8px;">${t.description}</div>` : ''}
-    <div class="task-meta">
-      ${dueStr ? `<div class="task-meta-item">📅 ${dueStr}</div>` : ''}
-      <div class="task-meta-item">📊 إنجاز: ${t.progress || 0}%</div>
-      ${t.created_at ? `<div class="task-meta-item">🕐 ${new Date(t.created_at).toLocaleDateString('ar-AE')}</div>` : ''}
-    </div>
-    <div class="task-progress">
-      <div class="progress-label"><span>التقدم</span><span>${t.progress || 0}%</span></div>
-      <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${t.progress||0}%"></div></div>
-    </div>
-    ${attachments.length ? `<div class="attachments-list">${attachments.map(a=>`<span class="attach-chip" title="${a.name}">📎 ${a.name.substring(0,20)}${a.name.length>20?'...':''}</span>`).join('')}</div>` : ''}
-    <div class="task-actions">
-      <button class="btn-sm edit" onclick="editTask('${t.id}')">✏️ تعديل</button>
-      <button class="btn-sm attach" onclick="editTask('${t.id}', true)">📎 مرفق</button>
-      <button class="btn-sm delete" onclick="deleteTask('${t.id}')">🗑️ حذف</button>
-    </div>
-  </div>`;
+  var sMap={pending:'badge-status-pending',inprogress:'badge-status-inprogress',done:'badge-status-done'};
+  var sLabel={pending:'معلقة',inprogress:'قيد التنفيذ',done:'مكتملة'};
+  var pMap={high:'badge-priority-high',medium:'badge-priority-medium',low:'badge-priority-low'};
+  var pLabel={high:'عالية 🔴',medium:'متوسطة 🟡',low:'منخفضة 🟢'};
+  var due=t.due_date?new Date(t.due_date).toLocaleDateString('ar-AE',{day:'numeric',month:'long'}):'';
+  var now=new Date(); now.setHours(0,0,0,0);
+  var late=t.due_date&&new Date(t.due_date)<now&&t.status!=='done';
+  var att=t.attachments?JSON.parse(t.attachments):[];
+  return '<div class="task-card priority-'+t.priority+'">'+
+    '<div class="task-top"><div class="task-title'+(t.status==='done'?' done':'')+'">'+t.title+'</div>'+
+    '<div class="task-badges"><span class="badge '+sMap[t.status]+'">'+sLabel[t.status]+'</span>'+
+    '<span class="badge '+pMap[t.priority]+'">'+pLabel[t.priority]+'</span>'+
+    (late?'<span class="badge" style="background:#f8d7da;color:#721c24">⚠️ متأخرة</span>':'')+
+    '</div></div>'+
+    (t.description?'<div style="font-size:13px;color:var(--muted);margin-bottom:8px">'+t.description+'</div>':'')+
+    '<div class="task-meta">'+
+    (due?'<div class="task-meta-item">📅 '+due+'</div>':'')+
+    '<div class="task-meta-item">📊 '+( t.progress||0)+'%</div></div>'+
+    '<div class="task-progress"><div class="progress-label"><span>التقدم</span><span>'+(t.progress||0)+'%</span></div>'+
+    '<div class="progress-bar-bg"><div class="progress-bar-fill" style="width:'+(t.progress||0)+'%"></div></div></div>'+
+    (att.length?'<div class="attachments-list">'+att.map(function(a){return '<span class="attach-chip">📎 '+a.name.substring(0,20)+'</span>';}).join('')+'</div>':'')+
+    '<div class="task-actions">'+
+    '<button class="btn-sm edit" onclick="editTask(\''+t.id+'\')">✏️ تعديل</button>'+
+    '<button class="btn-sm attach" onclick="editTask(\''+t.id+'\',true)">📎 مرفق</button>'+
+    '<button class="btn-sm delete" onclick="deleteTask(\''+t.id+'\')">🗑️ حذف</button>'+
+    '</div></div>';
 }
 
-function filterTasks(filter, btn) {
-  currentFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+function filterTasks(filter,btn) {
+  currentFilter=filter;
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
   renderTasks(filter);
 }
 
-function emptyState(title, sub) {
-  return `<div class="empty-state"><div class="empty-icon">📭</div><h3>${title}</h3><p>${sub}</p></div>`;
-}
+function emptyState(title,sub){ return '<div class="empty-state"><div class="empty-icon">📭</div><h3>'+title+'</h3><p>'+sub+'</p></div>'; }
 
-// ===== MODAL =====
 function openAddModal() {
-  editingTaskId = null;
-  pendingFiles = [];
-  document.getElementById('modalTitle').textContent = 'إضافة مهمة جديدة';
-  document.getElementById('fTitle').value = '';
-  document.getElementById('fDesc').value = '';
-  document.getElementById('fDueDate').value = '';
-  document.getElementById('fPriority').value = 'medium';
-  document.getElementById('fStatus').value = 'pending';
-  document.getElementById('fProgress').value = 0;
-  document.getElementById('progressVal').textContent = '0';
-  document.getElementById('selectedFiles').innerHTML = '';
+  editingTaskId=null; pendingFiles=[];
+  document.getElementById('modalTitle').textContent='إضافة مهمة جديدة';
+  document.getElementById('fTitle').value='';
+  document.getElementById('fDesc').value='';
+  document.getElementById('fDueDate').value='';
+  document.getElementById('fPriority').value='medium';
+  document.getElementById('fStatus').value='pending';
+  document.getElementById('fProgress').value=0;
+  document.getElementById('progressVal').textContent='0';
+  document.getElementById('selectedFiles').innerHTML='';
   document.getElementById('taskModal').classList.add('open');
 }
 
-function editTask(id, focusAttach = false) {
-  const t = allTasks.find(x => x.id === id);
-  if (!t) return;
-  editingTaskId = id;
-  pendingFiles = [];
-  document.getElementById('modalTitle').textContent = 'تعديل المهمة';
-  document.getElementById('fTitle').value = t.title;
-  document.getElementById('fDesc').value = t.description || '';
-  document.getElementById('fDueDate').value = t.due_date || '';
-  document.getElementById('fPriority').value = t.priority;
-  document.getElementById('fStatus').value = t.status;
-  document.getElementById('fProgress').value = t.progress || 0;
-  document.getElementById('progressVal').textContent = t.progress || 0;
-  document.getElementById('selectedFiles').innerHTML = '';
+function editTask(id,focusAttach) {
+  var t=allTasks.find(function(x){return x.id===id;});
+  if(!t) return;
+  editingTaskId=id; pendingFiles=[];
+  document.getElementById('modalTitle').textContent='تعديل المهمة';
+  document.getElementById('fTitle').value=t.title;
+  document.getElementById('fDesc').value=t.description||'';
+  document.getElementById('fDueDate').value=t.due_date||'';
+  document.getElementById('fPriority').value=t.priority;
+  document.getElementById('fStatus').value=t.status;
+  document.getElementById('fProgress').value=t.progress||0;
+  document.getElementById('progressVal').textContent=t.progress||0;
+  document.getElementById('selectedFiles').innerHTML='';
   document.getElementById('taskModal').classList.add('open');
-  if (focusAttach) setTimeout(() => document.getElementById('fileInput').click(), 300);
+  if(focusAttach) setTimeout(function(){document.getElementById('fileInput').click();},300);
 }
 
-function closeModal() {
-  document.getElementById('taskModal').classList.remove('open');
-  pendingFiles = [];
-}
+function closeModal(){ document.getElementById('taskModal').classList.remove('open'); pendingFiles=[]; }
 
 function handleFiles(files) {
-  for (const f of files) {
-    if (!pendingFiles.find(x => x.name === f.name)) pendingFiles.push(f);
-  }
-  const el = document.getElementById('selectedFiles');
-  el.innerHTML = pendingFiles.map(f => `<span class="attach-chip">📎 ${f.name}</span>`).join('');
+  for(var i=0;i<files.length;i++){ if(!pendingFiles.find(function(x){return x.name===files[i].name;})) pendingFiles.push(files[i]); }
+  document.getElementById('selectedFiles').innerHTML=pendingFiles.map(function(f){return '<span class="attach-chip">📎 '+f.name+'</span>';}).join('');
 }
 
 async function saveTask() {
-  const title = document.getElementById('fTitle').value.trim();
-  if (!title) { alert('يرجى إدخال عنوان المهمة'); return; }
-
-  // Upload files to Supabase Storage
-  let attachments = [];
-  if (editingTaskId) {
-    const existing = allTasks.find(t => t.id === editingTaskId);
-    attachments = existing?.attachments ? JSON.parse(existing.attachments) : [];
+  var title=document.getElementById('fTitle').value.trim();
+  if(!title){ alert('يرجى إدخال عنوان المهمة'); return; }
+  var attachments=[];
+  if(editingTaskId){ var ex=allTasks.find(function(t){return t.id===editingTaskId;}); attachments=ex&&ex.attachments?JSON.parse(ex.attachments):[]; }
+  for(var i=0;i<pendingFiles.length;i++){
+    var file=pendingFiles[i];
+    var path=currentUser.id+'/'+Date.now()+'_'+file.name;
+    var up=await sb.storage.from('task-attachments').upload(path,file,{upsert:true});
+    if(!up.error){ var url=sb.storage.from('task-attachments').getPublicUrl(path); attachments.push({name:file.name,url:url.data.publicUrl,path:path}); }
   }
-
-  for (const file of pendingFiles) {
-    const path = `${currentUser.id}/${Date.now()}_${file.name}`;
-    const { data: up, error: upErr } = await sb.storage.from('task-attachments').upload(path, file, { upsert: true });
-    if (!upErr) {
-      const { data: urlData } = sb.storage.from('task-attachments').getPublicUrl(path);
-      attachments.push({ name: file.name, url: urlData.publicUrl, path });
-    }
-  }
-
-  const taskData = {
-    user_id: currentUser.id,
-    title,
-    description: document.getElementById('fDesc').value.trim(),
-    due_date: document.getElementById('fDueDate').value || null,
-    priority: document.getElementById('fPriority').value,
-    status: document.getElementById('fStatus').value,
-    progress: parseInt(document.getElementById('fProgress').value),
-    attachments: JSON.stringify(attachments),
-    updated_at: new Date().toISOString()
-  };
-
-  if (editingTaskId) {
-    await sb.from('employee_tasks').update(taskData).eq('id', editingTaskId);
-  } else {
-    taskData.created_at = new Date().toISOString();
-    await sb.from('employee_tasks').insert(taskData);
-  }
-  closeModal();
-  await loadTasks();
+  var taskData={user_id:currentUser.id,title:title,description:document.getElementById('fDesc').value.trim(),due_date:document.getElementById('fDueDate').value||null,priority:document.getElementById('fPriority').value,status:document.getElementById('fStatus').value,progress:parseInt(document.getElementById('fProgress').value),attachments:JSON.stringify(attachments),updated_at:new Date().toISOString()};
+  if(editingTaskId){ await sb.from('employee_tasks').update(taskData).eq('id',editingTaskId); }
+  else{ taskData.created_at=new Date().toISOString(); await sb.from('employee_tasks').insert(taskData); }
+  closeModal(); await loadTasks();
 }
 
 async function deleteTask(id) {
-  if (!confirm('هل تريد حذف هذه المهمة نهائياً؟')) return;
-  await sb.from('employee_tasks').delete().eq('id', id);
+  if(!confirm('هل تريد حذف هذه المهمة؟')) return;
+  await sb.from('employee_tasks').delete().eq('id',id);
   await loadTasks();
 }
 
-// ===== REPORTS =====
 function renderReports() {
-  const total = allTasks.length;
-  const done = allTasks.filter(t => t.status === 'done').length;
-  const inprog = allTasks.filter(t => t.status === 'inprogress').length;
-  const pending = allTasks.filter(t => t.status === 'pending').length;
-  const high = allTasks.filter(t => t.priority === 'high').length;
-  const now = new Date(); now.setHours(0,0,0,0);
-  const late = allTasks.filter(t => t.due_date && new Date(t.due_date) < now && t.status !== 'done').length;
-  const avgProgress = total ? Math.round(allTasks.reduce((s,t) => s+(t.progress||0),0)/total) : 0;
-
-  document.getElementById('reportsGrid').innerHTML = `
-    <div class="report-card">
-      <h3>📊 ملخص الحالة</h3>
-      <div class="report-row"><span class="report-row-label">✅ مكتملة</span><span class="report-row-val" style="color:var(--green)">${done}</span></div>
-      <div class="report-row"><span class="report-row-label">⏳ قيد التنفيذ</span><span class="report-row-val" style="color:#004085">${inprog}</span></div>
-      <div class="report-row"><span class="report-row-label">📌 معلقة</span><span class="report-row-val" style="color:var(--gold)">${pending}</span></div>
-      <div class="report-row"><span class="report-row-label">⚠️ متأخرة</span><span class="report-row-val" style="color:var(--danger)">${late}</span></div>
-    </div>
-    <div class="report-card">
-      <h3>🎯 الإنجاز العام</h3>
-      <div style="text-align:center; padding:16px 0">
-        <div style="font-size:56px;font-weight:800;color:var(--navy)">${avgProgress}%</div>
-        <div style="font-size:13px;color:var(--muted);font-weight:700;margin:6px 0">متوسط نسبة الإنجاز</div>
-        <div class="progress-bar-bg" style="margin-top:12px"><div class="progress-bar-fill" style="width:${avgProgress}%"></div></div>
-      </div>
-      <div class="report-row"><span class="report-row-label">📋 إجمالي المهام</span><span class="report-row-val">${total}</span></div>
-      <div class="report-row"><span class="report-row-label">🔴 أولوية عالية</span><span class="report-row-val" style="color:var(--danger)">${high}</span></div>
-    </div>
-    <div class="report-card">
-      <h3>📅 هذا الأسبوع</h3>
-      ${getWeeklyReport()}
-    </div>
-  `;
+  var total=allTasks.length;
+  var done=allTasks.filter(function(t){return t.status==='done';}).length;
+  var inprog=allTasks.filter(function(t){return t.status==='inprogress';}).length;
+  var pending=allTasks.filter(function(t){return t.status==='pending';}).length;
+  var now=new Date(); now.setHours(0,0,0,0);
+  var late=allTasks.filter(function(t){return t.due_date&&new Date(t.due_date)<now&&t.status!=='done';}).length;
+  var avg=total?Math.round(allTasks.reduce(function(s,t){return s+(t.progress||0);},0)/total):0;
+  document.getElementById('reportsGrid').innerHTML=
+    '<div class="report-card"><h3>📊 ملخص الحالة</h3>'+
+    '<div class="report-row"><span class="report-row-label">✅ مكتملة</span><span class="report-row-val" style="color:var(--green)">'+done+'</span></div>'+
+    '<div class="report-row"><span class="report-row-label">⏳ قيد التنفيذ</span><span class="report-row-val" style="color:#004085">'+inprog+'</span></div>'+
+    '<div class="report-row"><span class="report-row-label">📌 معلقة</span><span class="report-row-val" style="color:var(--gold)">'+pending+'</span></div>'+
+    '<div class="report-row"><span class="report-row-label">⚠️ متأخرة</span><span class="report-row-val" style="color:var(--danger)">'+late+'</span></div></div>'+
+    '<div class="report-card"><h3>🎯 الإنجاز العام</h3>'+
+    '<div style="text-align:center;padding:16px 0"><div style="font-size:56px;font-weight:800;color:var(--navy)">'+avg+'%</div>'+
+    '<div style="font-size:13px;color:var(--muted);font-weight:700">متوسط نسبة الإنجاز</div>'+
+    '<div class="progress-bar-bg" style="margin-top:12px"><div class="progress-bar-fill" style="width:'+avg+'%"></div></div></div>'+
+    '<div class="report-row"><span class="report-row-label">📋 إجمالي المهام</span><span class="report-row-val">'+total+'</span></div></div>';
 }
 
-function getWeeklyReport() {
-  const now = new Date();
-  const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
-  weekStart.setHours(0,0,0,0);
-  const weekTasks = allTasks.filter(t => t.created_at && new Date(t.created_at) >= weekStart);
-  const weekDone = weekTasks.filter(t => t.status === 'done').length;
-  return `
-    <div class="report-row"><span class="report-row-label">📋 مهام هذا الأسبوع</span><span class="report-row-val">${weekTasks.length}</span></div>
-    <div class="report-row"><span class="report-row-label">✅ أُنجزت هذا الأسبوع</span><span class="report-row-val" style="color:var(--green)">${weekDone}</span></div>
-    <div class="report-row"><span class="report-row-label">📊 معدل الإنجاز</span><span class="report-row-val">${weekTasks.length ? Math.round(weekDone/weekTasks.length*100) : 0}%</span></div>
-  `;
-}
-
-// ===== MANAGER =====
 async function loadManagerView() {
-  const { data: profiles } = await sb.from('employee_profiles').select('*');
-  const { data: tasks } = await sb.from('employee_tasks').select('*');
-  if (!profiles || !tasks) return;
-
-  const cards = profiles.map(p => {
-    const emp_tasks = tasks.filter(t => t.user_id === p.id);
-    const done = emp_tasks.filter(t => t.status === 'done').length;
-    const inprog = emp_tasks.filter(t => t.status === 'inprogress').length;
-    return `<div class="emp-card">
-      <div class="emp-name">${p.name}</div>
-      <div class="emp-dept">${p.dept}</div>
-      <div class="emp-stats">
-        <div class="emp-stat"><div class="emp-stat-val">${emp_tasks.length}</div><div class="emp-stat-lbl">إجمالي</div></div>
-        <div class="emp-stat"><div class="emp-stat-val" style="color:var(--green)">${done}</div><div class="emp-stat-lbl">مكتملة</div></div>
-        <div class="emp-stat"><div class="emp-stat-val" style="color:#004085">${inprog}</div><div class="emp-stat-lbl">تنفيذ</div></div>
-      </div>
-    </div>`;
-  });
-  document.getElementById('empCards').innerHTML = cards.join('') || emptyState('لا يوجد موظفون مسجلون', 'سيظهر الموظفون هنا بعد تسجيل حساباتهم');
+  var profiles=await sb.from('employee_profiles').select('*');
+  var tasks=await sb.from('employee_tasks').select('*');
+  if(!profiles.data||!tasks.data) return;
+  document.getElementById('empCards').innerHTML=profiles.data.map(function(p){
+    var et=tasks.data.filter(function(t){return t.user_id===p.id;});
+    var d=et.filter(function(t){return t.status==='done';}).length;
+    var ip=et.filter(function(t){return t.status==='inprogress';}).length;
+    return '<div class="emp-card"><div class="emp-name">'+p.name+'</div><div class="emp-dept">'+p.dept+'</div>'+
+      '<div class="emp-stats">'+
+      '<div class="emp-stat"><div class="emp-stat-val">'+et.length+'</div><div class="emp-stat-lbl">إجمالي</div></div>'+
+      '<div class="emp-stat"><div class="emp-stat-val" style="color:var(--green)">'+d+'</div><div class="emp-stat-lbl">مكتملة</div></div>'+
+      '<div class="emp-stat"><div class="emp-stat-val" style="color:#004085">'+ip+'</div><div class="emp-stat-lbl">تنفيذ</div></div>'+
+      '</div></div>';
+  }).join('')||emptyState('لا يوجد موظفون','سيظهرون هنا بعد التسجيل');
 }
 
-// ===== TABS =====
 function showTab(tab) {
-  ['dashboard','tasks','reports','manager'].forEach(t => {
-    document.getElementById('tab-'+t).style.display = t===tab ? '' : 'none';
-  });
-  document.querySelectorAll('.nav-tab').forEach((btn, i) => {
-    const tabs = ['dashboard','tasks','reports','manager'];
-    btn.classList.toggle('active', tabs[i] === tab);
-  });
-  if (tab === 'manager') loadManagerView();
+  ['dashboard','tasks','reports','manager'].forEach(function(t){ document.getElementById('tab-'+t).style.display=t===tab?'':'none'; });
+  document.querySelectorAll('.nav-tab').forEach(function(btn,i){ btn.classList.toggle('active',['dashboard','tasks','reports','manager'][i]===tab); });
+  if(tab==='manager') loadManagerView();
 }
 
-// ===== INIT =====
-(async () => {
-  // Handle password reset from email link
-  const hash = window.location.hash;
-  if (hash && hash.includes('access_token') && hash.includes('type=recovery')) {
-    const params = new URLSearchParams(hash.substring(1));
-    const accessToken = params.get('access_token');
-    if (accessToken) {
-      const newPass = prompt('أدخلي كلمة المرور الجديدة:');
-      if (newPass && newPass.length >= 8) {
-        await sb.auth.setSession({ access_token: accessToken, refresh_token: params.get('refresh_token') });
-        const { error } = await sb.auth.updateUser({ password: newPass });
-        if (!error) {
-          alert('✅ تم تغيير كلمة المرور بنجاح! سجّلي دخولك الآن.');
-          window.location.hash = '';
-        } else {
-          alert('خطأ: ' + error.message);
-        }
-      }
-      return;
+(async function init(){
+  try {
+    var res=await sb.auth.getSession();
+    if(res.data&&res.data.session&&res.data.session.user){
+      await initUser(res.data.session.user);
+    } else {
+      document.getElementById('authScreen').style.display='flex';
     }
+  } catch(e) {
+    document.getElementById('authScreen').style.display='flex';
   }
-  const { data: { session } } = await sb.auth.getSession();
-  if (session?.user) await initUser(session.user);
 })();
 </script>
 </body>
