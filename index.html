@@ -788,6 +788,26 @@ function showTab(tab) {
 
 // ===== INIT =====
 (async () => {
+  // Handle password reset from email link
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token') && hash.includes('type=recovery')) {
+    const params = new URLSearchParams(hash.substring(1));
+    const accessToken = params.get('access_token');
+    if (accessToken) {
+      const newPass = prompt('أدخلي كلمة المرور الجديدة:');
+      if (newPass && newPass.length >= 8) {
+        await sb.auth.setSession({ access_token: accessToken, refresh_token: params.get('refresh_token') });
+        const { error } = await sb.auth.updateUser({ password: newPass });
+        if (!error) {
+          alert('✅ تم تغيير كلمة المرور بنجاح! سجّلي دخولك الآن.');
+          window.location.hash = '';
+        } else {
+          alert('خطأ: ' + error.message);
+        }
+      }
+      return;
+    }
+  }
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) await initUser(session.user);
 })();
